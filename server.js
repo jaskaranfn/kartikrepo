@@ -3,6 +3,7 @@
 // Import necessary modules
 const express = require('express');
 const firebase = require('firebase');
+require('firebase/auth');
 
 // Initialize Firebase app with your Firebase project configuration
 const firebaseConfig = {
@@ -23,9 +24,24 @@ const port = 3000;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Endpoint for teacher login
-app.post('/teacher/login', (req, res) => {
-  const { email, password } = req.body;
+// Endpoint for Google sign-in redirect callback
+app.get('/auth/google/callback', (req, res) => {
+  const { token } = req.query;
+
+  firebase.auth().signInWithCredential(firebase.auth.GoogleAuthProvider.credential(token))
+    .then(() => {
+      res.redirect('/'); // Redirect to the home page after successful sign-in
+    })
+    .catch(error => {
+      res.status(400).send(error.message);
+    });
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
+
 
   // Authenticate user using Firebase Authentication
   firebase.auth().signInWithEmailAndPassword(email, password)
